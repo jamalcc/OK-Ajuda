@@ -1,0 +1,126 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net: Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isValidStatusRecord(data) {
+      return data.keys().hasAll([
+        'ownerId',
+        'tipoProposta',
+        'convenio',
+        'banco',
+        'statusNome',
+        'codigoInterno',
+        'significado',
+        'necessarioAtuacao',
+        'atuacao',
+        'responsabilidade',
+        'reanalise',
+        'redigitacao',
+        'orientacao',
+        'palavrasChave',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'ownerId',
+        'tipoProposta',
+        'convenio',
+        'banco',
+        'statusNome',
+        'codigoInterno',
+        'significado',
+        'necessarioAtuacao',
+        'atuacao',
+        'responsabilidade',
+        'reanalise',
+        'redigitacao',
+        'orientacao',
+        'palavrasChave',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.ownerId == request.auth.uid &&
+      data.tipoProposta is string && data.tipoProposta.size() >= 9 && data.tipoProposta.size() <= 20 &&
+      (data.tipoProposta == 'em_andamento' || data.tipoProposta == 'cancelada') &&
+      data.convenio is string && data.convenio.size() >= 1 && data.convenio.size() <= 120 &&
+      data.banco is string && data.banco.size() >= 1 && data.banco.size() <= 120 &&
+      data.statusNome is string && data.statusNome.size() >= 1 && data.statusNome.size() <= 200 &&
+      data.codigoInterno is string && data.codigoInterno.size() >= 0 && data.codigoInterno.size() <= 60 &&
+      data.significado is string && data.significado.size() >= 1 && data.significado.size() <= 2000 &&
+      data.necessarioAtuacao is string && data.necessarioAtuacao.size() >= 3 && data.necessarioAtuacao.size() <= 20 &&
+      (data.necessarioAtuacao == 'Sim' || data.necessarioAtuacao == 'Não' || data.necessarioAtuacao == 'Acompanhar') &&
+      data.atuacao is string && data.atuacao.size() >= 1 && data.atuacao.size() <= 2000 &&
+      data.responsabilidade is string && data.responsabilidade.size() >= 1 && data.responsabilidade.size() <= 150 &&
+      data.reanalise is string && data.reanalise.size() >= 0 && data.reanalise.size() <= 100 &&
+      data.redigitacao is string && data.redigitacao.size() >= 0 && data.redigitacao.size() <= 100 &&
+      data.orientacao is string && data.orientacao.size() >= 0 && data.orientacao.size() <= 2000 &&
+      data.palavrasChave is string && data.palavrasChave.size() >= 0 && data.palavrasChave.size() <= 500 &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    match /status_records/{recordId} {
+      allow get: if isSignedIn() && isValidId(recordId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+
+      allow create: if isVerifiedUser() &&
+        isValidId(recordId) &&
+        isValidStatusRecord(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+
+      allow update: if isVerifiedUser() &&
+        isValidId(recordId) &&
+        isValidStatusRecord(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'tipoProposta',
+          'convenio',
+          'banco',
+          'statusNome',
+          'codigoInterno',
+          'significado',
+          'necessarioAtuacao',
+          'atuacao',
+          'responsabilidade',
+          'reanalise',
+          'redigitacao',
+          'orientacao',
+          'palavrasChave',
+          'updatedAt'
+        ]);
+
+      allow delete: if isVerifiedUser() &&
+        isValidId(recordId) &&
+        existing().ownerId == request.auth.uid;
+    }
+  }
+}

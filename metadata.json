@@ -1,0 +1,6 @@
+{
+  "name": "OK Ajuda — Sistema de Consulta de Status e Motivos de Cancelamento",
+  "description": "Sistema inteligente de consulta de status de propostas em andamento e motivos de cancelamento por Convênio e Banco, com busca aproximada (fuzzy search), sugestões em tempo real e importação de base de dados.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

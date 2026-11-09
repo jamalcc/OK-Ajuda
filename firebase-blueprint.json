@@ -1,0 +1,134 @@
+{
+  "entities": {
+    "StatusRecord": {
+      "title": "StatusRecord",
+      "description": "Represents a proposal status (Status Propostas) or cancellation reason (Motivos de Recusa) mapped by convenio and banco.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the creator/owner",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "tipoProposta": {
+          "type": "string",
+          "description": "Whether the record is for an ongoing proposal (em_andamento) or a cancelled proposal reason (cancelada)",
+          "enum": ["em_andamento", "cancelada"],
+          "minLength": 9,
+          "maxLength": 20
+        },
+        "convenio": {
+          "type": "string",
+          "description": "Coluna Convenio (e.g., INSS, SIAPE, FGTS, Governo Estadual)",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "banco": {
+          "type": "string",
+          "description": "Coluna Banco (e.g., Banrisul, Banco Pan, C6 Consig)",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "statusNome": {
+          "type": "string",
+          "description": "Coluna Status (em andamento) ou Motivo (recusa/cancelada)",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "codigoInterno": {
+          "type": "string",
+          "description": "Optional internal bank code or reference code",
+          "minLength": 0,
+          "maxLength": 60
+        },
+        "significado": {
+          "type": "string",
+          "description": "Coluna Significado: Detailed operational meaning of this status or cancellation reason",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "necessarioAtuacao": {
+          "type": "string",
+          "description": "Coluna Necessário Atuação (Sim, Não, Acompanhar)",
+          "enum": ["Sim", "Não", "Acompanhar"],
+          "minLength": 3,
+          "maxLength": 20
+        },
+        "atuacao": {
+          "type": "string",
+          "description": "Coluna Atuação: Detailed action plan and instructions for the operator",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "responsabilidade": {
+          "type": "string",
+          "description": "Coluna Responsabilidade de Atuação: Party responsible for the next step or resolution",
+          "minLength": 1,
+          "maxLength": 150
+        },
+        "reanalise": {
+          "type": "string",
+          "description": "Coluna Reanálise (para Motivos de Recusa)",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        "redigitacao": {
+          "type": "string",
+          "description": "Coluna Redigitação (para Motivos de Recusa)",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        "orientacao": {
+          "type": "string",
+          "description": "Coluna Orientação (para Motivos de Recusa)",
+          "minLength": 0,
+          "maxLength": 2000
+        },
+        "palavrasChave": {
+          "type": "string",
+          "description": "Comma-separated synonyms or common search terms",
+          "minLength": 0,
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the record was created"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the record was last updated"
+        }
+      },
+      "required": [
+        "ownerId",
+        "tipoProposta",
+        "convenio",
+        "banco",
+        "statusNome",
+        "codigoInterno",
+        "significado",
+        "necessarioAtuacao",
+        "atuacao",
+        "responsabilidade",
+        "reanalise",
+        "redigitacao",
+        "orientacao",
+        "palavrasChave",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/status_records/{recordId}": {
+      "schema": {
+        "$ref": "#/entities/StatusRecord"
+      },
+      "description": "Collection storing status records (Status Propostas) and refusal reasons (Motivos de Recusa) in the database."
+    }
+  }
+}
